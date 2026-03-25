@@ -503,72 +503,118 @@ function Leaderboard({ notebooks, onClose }) {
   );
 }
 
-function ContributeModal({ onClose }) {
-  const init = { title:"",subject:"",customSubject:"",teacher:"",email:"",school:"",description:"",link:"",hashtag1:"",hashtag2:"",hashtag3:"",hashtag4:"",instagram:"",tiktok:"",linkedin:"" };
-  const [form,setForm]=useState(init);
-  const [status,setStatus]=useState("idle");
-  const [errMsg,setErrMsg]=useState("");
-  const set=(k,v)=>setForm(f=>({...f,[k]:v}));
-  const valid=form.title.trim()&&form.subject&&form.teacher.trim()&&form.link.trim();
+function ContributeModal({ onClose, onSuccess }) {
+  const [form, setForm] = useState({ title:"", subject:"", customSubject:"", teacher:"", description:"", link:"" });
+  const [status, setStatus] = useState("idle");
+  const [errMsg, setErrMsg] = useState("");
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  const valid = form.title.trim() && form.subject && form.teacher.trim() && form.link.trim();
 
-  const submit=async()=>{
-    if(!valid)return;
+  const submit = async () => {
+    if (!valid) return;
     setStatus("loading");
-    const tags=[form.hashtag1,form.hashtag2,form.hashtag3,form.hashtag4].filter(Boolean).join(",");
-    try{
-      await db.insertNotebook({title:form.title.trim(),subject:form.subject,custom_subject:form.customSubject.trim(),teacher:form.teacher.trim(),email:form.email.trim(),school:form.school.trim(),description:form.description.trim(),link:form.link.trim(),hashtags:tags,instagram:form.instagram.trim(),tiktok:form.tiktok.trim(),linkedin:form.linkedin.trim(),featured:false,approved:false});
+    try {
+      await db.insertNotebook({
+        title: form.title.trim(),
+        subject: form.subject,
+        custom_subject: form.customSubject.trim(),
+        teacher: form.teacher.trim(),
+        description: form.description.trim(),
+        link: form.link.trim(),
+        featured: false,
+        approved: true, // publicación inmediata
+      });
       setStatus("success");
-    }catch(e){setErrMsg(e.message);setStatus("error");}
+      onSuccess?.();
+    } catch(e) { setErrMsg(e.message); setStatus("error"); }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[92vh] flex flex-col" onClick={e=>e.stopPropagation()}>
-        <div className="bg-gradient-to-br from-violet-500 to-blue-500 p-5 text-white flex items-start justify-between flex-shrink-0">
-          <div><div className="flex items-center gap-2 mb-0.5"><Plus size={18}/><span className="font-black text-lg">Contribuir Cuaderno</span></div><p className="text-violet-100 text-sm">Comparte tu NotebookLM con la comunidad</p></div>
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden" onClick={e=>e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="bg-gradient-to-br from-violet-500 to-blue-500 p-5 text-white flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-0.5"><Plus size={18}/><span className="font-black text-lg">Contribuir Cuaderno</span></div>
+            <p className="text-violet-100 text-sm">Comparte tu NotebookLM con la comunidad</p>
+          </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-white/20 transition"><X size={18}/></button>
         </div>
-        {status==="success" ? (
+
+        {/* Success */}
+        {status === "success" ? (
           <div className="p-10 text-center">
-            <CheckCircle2 size={48} className="text-emerald-500 mx-auto mb-4"/>
-            <h3 className="font-black text-slate-800 text-xl mb-2">¡Gracias por contribuir!</h3>
-            <p className="text-sm text-slate-500 mb-3">Tu cuaderno está guardado y aparecerá una vez aprobado.</p>
-            <div className="inline-flex items-center gap-2 text-amber-600 bg-amber-50 rounded-xl px-4 py-2 text-xs font-semibold mb-6"><Clock size={13}/> Pendiente de revisión</div><br/>
-            <button onClick={onClose} className="px-6 py-2.5 rounded-xl bg-violet-500 text-white font-bold text-sm hover:bg-violet-600 transition">Cerrar</button>
+            <CheckCircle2 size={52} className="text-emerald-500 mx-auto mb-4"/>
+            <h3 className="font-black text-slate-800 text-xl mb-2">¡Cuaderno publicado!</h3>
+            <p className="text-sm text-slate-500 mb-6">Tu cuaderno ya está visible en la galería para toda la comunidad. ¡Gracias por contribuir! 🎉</p>
+            <button onClick={onClose} className="px-6 py-2.5 rounded-xl bg-violet-500 text-white font-bold text-sm hover:bg-violet-600 transition">Ver galería</button>
           </div>
-        ):(
-          <div className="p-5 space-y-4 overflow-y-auto">
-            {status==="error"&&<div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 text-red-700 text-xs"><AlertCircle size={14}/><span>{errMsg}</span></div>}
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Cuaderno *</p>
-            <div><label className="block text-xs font-bold text-slate-500 mb-1">Título *</label><input value={form.title} onChange={e=>set("title",e.target.value)} placeholder="Ej: Geometría Analítica para 3° Medio" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/></div>
+        ) : (
+          <div className="p-6 space-y-4">
+            {status==="error" && (
+              <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 text-red-700 text-xs">
+                <AlertCircle size={14} className="flex-shrink-0 mt-0.5"/><span>{errMsg}</span>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5">Título del cuaderno *</label>
+              <input value={form.title} onChange={e=>set("title",e.target.value)}
+                placeholder="Ej: Geometría Analítica para 3° Medio"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="block text-xs font-bold text-slate-500 mb-1">Asignatura *</label>
-                <select value={form.subject} onChange={e=>set("subject",e.target.value)} className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition bg-white">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5">Asignatura *</label>
+                <select value={form.subject} onChange={e=>set("subject",e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition bg-white">
                   <option value="">Selecciona...</option>
                   {SUBJECTS.filter(s=>s!=="Todos").map(s=><option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
-              <div><label className="block text-xs font-bold text-slate-500 mb-1">Tu Nombre *</label><input value={form.teacher} onChange={e=>set("teacher",e.target.value)} placeholder="Ej: Ricky Valencia" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/></div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5">Tu nombre *</label>
+                <input value={form.teacher} onChange={e=>set("teacher",e.target.value)}
+                  placeholder="Ej: Ricky Valencia"
+                  className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/>
+              </div>
             </div>
-            {form.subject==="Otra"&&<div><label className="block text-xs font-bold text-slate-500 mb-1">¿Cuál asignatura? *</label><input value={form.customSubject} onChange={e=>set("customSubject",e.target.value)} placeholder="Ej: Música, Economía, Robótica..." className="w-full border border-violet-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/></div>}
-            <div><label className="block text-xs font-bold text-slate-500 mb-1">Link de NotebookLM *</label><input value={form.link} onChange={e=>set("link",e.target.value)} placeholder="https://notebooklm.google.com/notebook/..." className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/></div>
-            <div><label className="block text-xs font-bold text-slate-500 mb-1">Descripción</label><textarea value={form.description} onChange={e=>set("description",e.target.value)} rows={2} placeholder="Breve descripción..." className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition resize-none"/></div>
-            <div><label className="block text-xs font-bold text-slate-500 mb-1 flex items-center gap-1"><Hash size={12}/> Hashtags (hasta 4)</label>
-              <div className="grid grid-cols-2 gap-2">{["hashtag1","hashtag2","hashtag3","hashtag4"].map((k,i)=><input key={k} value={form[k]} onChange={e=>set(k,e.target.value)} placeholder={`#hashtag${i+1}`} className="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/>)}</div>
+
+            {form.subject === "Otra" && (
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5">¿Cuál asignatura? *</label>
+                <input value={form.customSubject} onChange={e=>set("customSubject",e.target.value)}
+                  placeholder="Ej: Música, Economía, Robótica..."
+                  className="w-full border border-violet-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5">Link de NotebookLM *</label>
+              <input value={form.link} onChange={e=>set("link",e.target.value)}
+                placeholder="https://notebooklm.google.com/notebook/..."
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/>
             </div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider pt-1">Datos opcionales</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div><label className="block text-xs font-bold text-slate-500 mb-1">Correo</label><input value={form.email} onChange={e=>set("email",e.target.value)} placeholder="tu@correo.cl" type="email" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/></div>
-              <div><label className="block text-xs font-bold text-slate-500 mb-1">Escuela</label><input value={form.school} onChange={e=>set("school",e.target.value)} placeholder="Ej: Liceo San José" className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/></div>
-              <div><label className="block text-xs font-bold text-slate-500 mb-1">Instagram</label><input value={form.instagram} onChange={e=>set("instagram",e.target.value)} placeholder="https://instagram.com/..." className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/></div>
-              <div><label className="block text-xs font-bold text-slate-500 mb-1">TikTok</label><input value={form.tiktok} onChange={e=>set("tiktok",e.target.value)} placeholder="https://tiktok.com/..." className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/></div>
-              <div className="col-span-2"><label className="block text-xs font-bold text-slate-500 mb-1">LinkedIn</label><input value={form.linkedin} onChange={e=>set("linkedin",e.target.value)} placeholder="https://linkedin.com/in/..." className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/></div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5">Descripción breve</label>
+              <textarea value={form.description} onChange={e=>set("description",e.target.value)} rows={2}
+                placeholder="¿De qué trata este cuaderno? (opcional)"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition resize-none"/>
             </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-500 flex items-start gap-2"><Clock size={13} className="flex-shrink-0 mt-0.5 text-amber-500"/>Aparecerá después de la revisión del administrador.</div>
-            <div className="flex gap-3">
+
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-700 flex items-center gap-2 font-semibold">
+              <CheckCircle2 size={14} className="flex-shrink-0"/>
+              Tu cuaderno se publicará de inmediato en la galería.
+            </div>
+
+            <div className="flex gap-3 pt-1">
               <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 transition">Cancelar</button>
-              <button onClick={submit} disabled={!valid||status==="loading"} className="flex-1 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white text-sm font-bold transition flex items-center justify-center gap-2">
-                {status==="loading"?<><Loader2 size={14} className="animate-spin"/> Guardando...</>:<><Send size={14}/> Enviar</>}
+              <button onClick={submit} disabled={!valid||status==="loading"}
+                className="flex-1 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-600 disabled:opacity-50 text-white text-sm font-bold transition flex items-center justify-center gap-2">
+                {status==="loading" ? <><Loader2 size={14} className="animate-spin"/> Publicando...</> : <><Send size={14}/> Publicar</>}
               </button>
             </div>
           </div>
@@ -938,7 +984,7 @@ export default function App() {
       )}
 
       {showLeaderboard      &&<Leaderboard notebooks={notebooks} onClose={()=>setShowLeaderboard(false)}/>}
-      {showContribute       &&<ContributeModal onClose={()=>setShowContribute(false)}/>}
+      {showContribute       &&<ContributeModal onClose={()=>setShowContribute(false)} onSuccess={()=>{ setShowContribute(false); reload(); }}/>}
       {showContributePrompt &&<ContributePromptModal onClose={()=>setShowContributePrompt(false)}/>}
     </div>
   );
