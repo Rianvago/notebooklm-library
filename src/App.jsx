@@ -83,69 +83,31 @@ const MEDAL = [
   { icon:"🥉", bg:"bg-orange-50", border:"border-orange-200", text:"text-orange-700" },
 ];
 
-// ─── COMPLEMENTOS ─────────────────────────────────────────────────────────────
+// ─── COMPLEMENTOS — plugins Chrome ───────────────────────────────────────────
 const COMPLEMENTOS = [
-  // ── Herramientas Web ──
-  {
-    name: "Google Drive",
-    desc: "Conecta tus documentos y PDFs directamente como fuentes en NotebookLM para enriquecer tus cuadernos al instante.",
-    link: "https://drive.google.com",
-    icon: "📁", color: "bg-blue-50 border-blue-200", type: "web", rating: null,
-  },
-  {
-    name: "Google Scholar",
-    desc: "Encuentra artículos académicos y papers científicos en PDF para importarlos como fuentes confiables en tus cuadernos.",
-    link: "https://scholar.google.com",
-    icon: "🎓", color: "bg-emerald-50 border-emerald-200", type: "web", rating: null,
-  },
-  {
-    name: "Gemini",
-    desc: "Complementa NotebookLM con Gemini para generar ideas, resumir contenidos y crear material pedagógico adicional.",
-    link: "https://gemini.google.com",
-    icon: "✨", color: "bg-violet-50 border-violet-200", type: "web", rating: null,
-  },
-  {
-    name: "Perplexity AI",
-    desc: "Busca información actualizada en tiempo real y exporta los resultados como fuente complementaria en tus cuadernos.",
-    link: "https://perplexity.ai",
-    icon: "🔍", color: "bg-amber-50 border-amber-200", type: "web", rating: null,
-  },
-  {
-    name: "Napkin AI",
-    desc: "Transforma el texto de tus cuadernos en infografías y diagramas visuales para presentar a tus estudiantes.",
-    link: "https://napkin.ai",
-    icon: "🗂️", color: "bg-teal-50 border-teal-200", type: "web", rating: null,
-  },
-  // ── Plugins Chrome ──
   {
     name: "NotebookLM Tools",
     desc: "La navaja suiza de NotebookLM: importación masiva de fuentes, organización por carpetas, banco de prompts, duplicado de cuadernos, fusión de fuentes, modo studio, etiquetas y modo oscuro.",
     link: "https://chromewebstore.google.com/detail/notebooklm-tools/hiibkpjljigehlnnecbgehkhfibmahjn?hl=es",
-    icon: "🧰", color: "bg-yellow-50 border-yellow-200", type: "chrome", rating: "4,7 ⭐",
+    icon: "🧰", color: "bg-yellow-50 border-yellow-200", rating: "4,7 ⭐",
   },
   {
     name: "FolderLLM: Carpetas en NotebookLM",
     desc: "Crea carpetas dentro de NotebookLM para organizar tus cuadernos visualmente. Añade colores, emojis y arrastra cuadernos entre carpetas con un clic.",
     link: "https://chromewebstore.google.com/detail/folderllm-create-folders/nknkgcmodkaiffdnlpmlnegmeamnbioe",
-    icon: "📂", color: "bg-orange-50 border-orange-200", type: "chrome", rating: "4,5 ⭐",
+    icon: "📂", color: "bg-orange-50 border-orange-200", rating: "4,5 ⭐",
   },
   {
     name: "NotebookLM Ultra Exporter",
     desc: "Exporta tus notas, diapositivas, mapas mentales, flashcards, tablas e infografías de NotebookLM a Markdown, Word, PDF, CSV y más formatos con un clic.",
     link: "https://chromewebstore.google.com/detail/notebooklm-ultra-exporter/afchokljnhhggkhedfbmkcmdagjmjchj?hl=es",
-    icon: "📤", color: "bg-slate-50 border-slate-300", type: "chrome", rating: "4,1 ⭐",
+    icon: "📤", color: "bg-slate-50 border-slate-300", rating: "4,1 ⭐",
   },
   {
     name: "YouTube to NotebookLM",
     desc: "Envía videos de YouTube directamente a NotebookLM como fuentes. Sincroniza canales completos y gestiona todos tus videos desde el cuaderno sin copiar y pegar links.",
     link: "https://chromewebstore.google.com/detail/youtube-to-notebooklm/kobncfkmjelbefaoohoblamnbackjggk",
-    icon: "▶️", color: "bg-red-50 border-red-200", type: "chrome", rating: "4,9 ⭐",
-  },
-  {
-    name: "NotebookLM Web Importer",
-    desc: "Importa cualquier página web directamente como fuente en NotebookLM con un clic desde el navegador. Sin copiar texto ni URLs manualmente.",
-    link: "https://chromewebstore.google.com/detail/notebooklm-web-importer/lkfiddkempgfbdcbonecmabjdelomhgo",
-    icon: "🌐", color: "bg-sky-50 border-sky-200", type: "chrome", rating: null,
+    icon: "▶️", color: "bg-red-50 border-red-200", rating: "4,9 ⭐",
   },
 ];
 
@@ -504,7 +466,7 @@ function Leaderboard({ notebooks, onClose }) {
 }
 
 function ContributeModal({ onClose, onSuccess }) {
-  const [form, setForm] = useState({ title:"", subject:"", customSubject:"", teacher:"", description:"", link:"" });
+  const [form, setForm] = useState({ title:"", subject:"", customSubject:"", teacher:"", school:"", description:"", link:"" });
   const [status, setStatus] = useState("idle");
   const [errMsg, setErrMsg] = useState("");
   const set = (k,v) => setForm(f=>({...f,[k]:v}));
@@ -519,6 +481,7 @@ function ContributeModal({ onClose, onSuccess }) {
         subject: form.subject,
         custom_subject: form.customSubject.trim(),
         teacher: form.teacher.trim(),
+        school: form.school.trim(),
         description: form.description.trim(),
         link: form.link.trim(),
         featured: false,
@@ -590,6 +553,13 @@ function ContributeModal({ onClose, onSuccess }) {
                   className="w-full border border-violet-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/>
               </div>
             )}
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1.5">Establecimiento o Institución</label>
+              <input value={form.school} onChange={e=>set("school",e.target.value)}
+                placeholder="Ej: Liceo Bicentenario San José UR"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 transition"/>
+            </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-500 mb-1.5">Link de NotebookLM *</label>
@@ -722,7 +692,7 @@ export default function App() {
   const [isAdmin, setIsAdmin]                 = useState(false);
   const [adminInput, setAdminInput]           = useState("");
   const [showAdminLogin, setShowAdminLogin]   = useState(false);
-  const [complementFilter, setComplementFilter] = useState("todos");
+
 
   const filtered = useMemo(() => notebooks.filter(nb => {
     const matchSubject = activeSubject==="Todos" || nb.subject===activeSubject;
@@ -886,22 +856,12 @@ export default function App() {
           {activeTab==="complementos"&&(
             <div>
               <div className="mb-5"><h2 className="font-black text-slate-800 text-xl flex items-center gap-2"><Zap size={20} className="text-amber-500"/> Complementos para NotebookLM</h2><p className="text-sm text-slate-500 mt-0.5">Herramientas web y plugins de Chrome para potenciar tu experiencia.</p></div>
-              <div className="flex gap-2 mb-5">
-                {[{id:"todos",label:"Todos"},{id:"web",label:"🌐 Herramientas Web"},{id:"chrome",label:"🔌 Plugins Chrome"}].map(f=>(
-                  <button key={f.id} onClick={()=>setComplementFilter(f.id)}
-                    className={`px-4 py-2 rounded-full text-xs font-bold border transition ${complementFilter===f.id?"bg-slate-800 text-white border-slate-800":"bg-white text-slate-600 border-slate-200 hover:border-slate-300"}`}>
-                    {f.label}
-                  </button>
-                ))}
+              <div className="mb-4 flex items-center gap-2">
+                <Chrome size={15} className="text-slate-500"/>
+                <p className="text-xs text-slate-500 font-semibold">Instala directamente desde la Chrome Web Store con un clic</p>
               </div>
-              {complementFilter!=="web"&&(
-                <div className="mb-3 flex items-center gap-2">
-                  <Chrome size={15} className="text-slate-500"/>
-                  <p className="text-xs text-slate-500 font-semibold">Plugins de Chrome — instala directamente desde la Chrome Web Store</p>
-                </div>
-              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {COMPLEMENTOS.filter(c=>complementFilter==="todos"||c.type===complementFilter).map(c=>(
+                {COMPLEMENTOS.map(c=>(
                   <div key={c.name} className={`rounded-2xl border p-5 flex flex-col gap-3 ${c.color}`}>
                     <div className="flex items-start gap-3">
                       <span className="text-3xl flex-shrink-0">{c.icon}</span>
